@@ -1,8 +1,25 @@
 import numpy as np
 
+
 def purity(rho):
     purity = np.trace(np.matmul(rho,rho))
     return np.round(np.real(purity), 3)
+
+"""
+s_param(n, rho)
+
+Calculate the s-parameter. Currently only available for two qubit systems.
+
+Parameters:
+----------------------
+
+n:
+    number of qubits in the system.
+
+rho:
+    numpy array representing the density matrix of a quantum state
+
+"""
 
 def s_param(n, rho):
 
