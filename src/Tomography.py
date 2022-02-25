@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import qutip as qt
-from TomoHelpers import *
-from RhoProperties import *
+from tomohelpers import *
+from rhoproperties import *
 
 
 """
