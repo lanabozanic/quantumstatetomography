@@ -317,3 +317,76 @@ def import_xl(n, file):
     
     projections = str_to_state(projections_str, n)
     return projections, counts
+
+
+
+
+def generate_basis_states(d):
+    basis_states = []
+
+    for i in range(d):
+        curr_state = np.array([])
+        for j in range(d):
+            #print(i,j)
+            if i == j:
+                curr_state = np.append(curr_state, 1)
+            else:
+                curr_state = np.append(curr_state, 0)
+                
+
+        
+        basis_states.append(np.asmatrix(curr_state))
+        
+    return basis_states
+
+"""
+generate_gellman(d)
+
+Generates the Gell-Mann basis matricies for a given dimension. For more information check out https://en.wikipedia.org/wiki/Gell-Mann_matrices
+
+Parameters:
+----------------------
+
+d: int
+   number of qudit dimensions.
+
+"""
+
+
+
+def generate_gellman(d):
+    gm_matricies = []
+    iden = np.identity(d)
+
+    basis_states = generate_basis_states(d)
+    gm_matricies.append(np.asmatrix(iden))
+
+
+
+    for i in range(d):
+         for j in range(d):
+            if j <= i:
+                 continue
+            else:
+                # Generate the pauli X matricies:
+                curr_x = np.outer(basis_states[i], basis_states[j]) + np.outer(basis_states[j], basis_states[i])
+                
+                # Generate the pauli Y matricies:
+                curr_y = 1j* np.outer(basis_states[i], basis_states[j]) - np.outer(basis_states[j], basis_states[i])
+                
+                gm_matricies.append(np.asmatrix(curr_x))
+                gm_matricies.append(np.asmatrix(curr_y))
+    
+    # Generate the Pauli Z matrix
+    
+    for r in range(1,d):
+        curr_z = np.asmatrix(np.zeros((d,d)))
+        for j in range(0, d-1):
+            curr_z = curr_z + np.outer(basis_states[j], basis_states[j])
+            print(curr_z)
+            
+        curr_z = np.sqrt(2/(r*(r+1))) * (curr_z - r*np.outer(basis_states[r], basis_states[r]))
+        gm_matricies.append(curr_z)
+                
+    return gm_matricies
+

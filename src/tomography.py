@@ -25,13 +25,13 @@ class Rho():
 
     
 """
-class Tomo()
+class QubitTomo()
 
-object used to perform tomography
+object used to perform tomography on qubits.
 
 """
 
-class Tomo():
+class QubitTomo():
 
     def __init__(self, nqbits):
         self.n = nqbits
@@ -125,3 +125,20 @@ class Tomo():
 
     def display_rho(self,rho):
         return(qt.Qobj(rho))
+
+
+"""
+class QuditTomo()
+
+object used to perform tomography on qubits.
+
+"""
+
+class QuditTomo():
+
+
+    def __init__(self, nqbits, dim):
+        self.n = nqdits
+        self.d = dim
+
+    
