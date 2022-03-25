@@ -111,6 +111,9 @@ rho: numpy array
 d: int
     represents the dimension of our quantum system
 
+n: int
+    number of qudits in the system
+
 
 """
 

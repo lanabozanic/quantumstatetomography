@@ -46,7 +46,7 @@ class QubitTomo():
 
 
     """
-    qbit_MLE()
+    qst_MLE(self, projections, counts, filename)
 
     Performs the Maximum Likelihood Technique Algorithm to reconstruct the state of a qubit. Returns a Rho() object.
 
@@ -81,7 +81,7 @@ class QubitTomo():
 
 
     """
-    bloch_visualization()
+    bloch_visualization(self, rho):
 
     Used to visualize a one-qubit state on the bloch sphere using QuTiP (only available for one-qubit tomography)
 
@@ -102,7 +102,7 @@ class QubitTomo():
 
 
     """
-    density_plot()
+    density_plot(self, rho):
 
     Used to visualize any n qubit state on a histogram using QuTiP 
 
@@ -119,7 +119,7 @@ class QubitTomo():
         plot_density(self.n, rho)
 
     """
-    display_rho()
+    display_rho(self,rho):
 
     Displays a formatted version of the rho matrix 
 
@@ -149,6 +149,24 @@ class QuditTomo():
         self.n = n
         self.d = dim
 
+    """
+    qst_MLE(self, projections, counts)
+
+    Performs the Maximum Likelihood Technique Algorithm to reconstruct the state of a qubit. Returns a Rho() object.
+
+    Parameters:
+    ----------------------
+    projections: list
+        list of the states your tomography was projected on, in string form. e.g. ["H", "V", "D", "A", "L", "R"]
+    
+    counts: numpy array
+        counts corresponding to the list of projections (e.g. if projections =[HH, HV...RR], your counts should be written in
+        the same order)
+
+    filename: string
+        name of the the excel (.xlsx) file you wish to import your data from (to see how to format your data, check out
+        example.xlsx)
+    """
 
     def qst_MLE(self, projections=[], counts=np.array([])):
         if len(projections) != len(counts):
@@ -160,6 +178,19 @@ class QuditTomo():
         rho = maximum_liklihood_estimation(self.n, self.d, counts, projections)
         return Rho(self.n, self.d, rho)
 
+
+    """
+    display_rho(self,rho):
+
+    Displays a formatted version of the rho matrix 
+
+    Parameters:
+    ----------------------
+
+    rho: np.array
+        matrix representing the density matrix of the state we wish to plot (must be 2**n x 2**n)
+
+    """
     def display_rho(self,rho):
         return(qt.Qobj(rho))
 
