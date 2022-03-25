@@ -1,5 +1,5 @@
 import numpy as np
-
+from .tomohelpers import *
 
 """
 purity(rho):
@@ -10,9 +10,7 @@ Parameters:
 ----------------------
 rho: np.matrix
 
-
 """
-
 
 def purity(rho):
     purity = np.trace(np.matmul(rho,rho))
@@ -55,6 +53,21 @@ def s_param(n, rho):
     else:
         print("S-parameter: This is only available for two-qubit systems. S-param was not calculated")
 
+
+
+"""
+concurrence(rho)
+
+Calculate the concurrence. Currently only available for two qubit systems.
+
+Parameters:
+----------------------
+
+rho: numpy array 
+    numpy array representing the density matrix of a quantum state
+
+"""
+
 def concurrence(rho):
     eigvals, eigvecs = np.linalg.eig(rho)
     eigvals = np.sort(eigvals)[::-1]
@@ -67,5 +80,50 @@ def concurrence(rho):
     
     return max(0, np.round(np.real(con), 3))
 
+"""
+tangle(concurrence)
+
+Calculate the tangle. Currently only available for two qubit systems.
+
+Parameters:
+----------------------
+
+concurrence: num
+    The value of the concurrence of the system.
+
+"""
+
 def tangle(concurrence):
     return concurrence ** 2
+    
+
+"""
+stokes_params(rho, d)
+
+Calculates the Stoke's Parameters of a given quantum state density matrix.
+
+Parameters:
+----------------------
+
+rho: numpy array 
+    numpy array representing the density matrix of a quantum state
+
+d: int
+    represents the dimension of our quantum system
+
+
+"""
+
+def stokes_params(rho, d, n):
+    stokes_params = []
+    gell_manns = generate_gellman(d)
+    sp_matricies = gen_sp_matricies(n, gell_manns, gell_manns)
+
+    for i in sp_matricies:
+        #print(i, np.size(i), rho, np.size(rho))
+        stoke_param = np.trace(np.matmul(i, rho))
+        stokes_params.append(round(stoke_param, 3))
+
+    return stokes_params
+
+

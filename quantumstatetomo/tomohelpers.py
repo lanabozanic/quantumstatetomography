@@ -129,14 +129,13 @@ params: list (num)
 
 """
 
-def create_t_matrix(n, params):
-   # print(n)
-    t_matrix = np.zeros((2 ** n, 2 ** n), dtype = "complex_")
+def create_t_matrix(n, d, params):
+    t_matrix = np.zeros((d ** n, d ** n), dtype = "complex_")
     counter = 0
     idx = 0
-    while(counter != 2 ** n):
-        for i in range(2 ** n):
-            for j in range(2 ** n):
+    while(counter != d ** n):
+        for i in range(d ** n):
+            for j in range(d ** n):
                 if i == j + counter:
                     if i == j:
                         t_matrix[i][j] = params[idx]
@@ -172,10 +171,10 @@ projections: list (np.matrix)
 """
 
 
-def maximum_liklihood_cost(params, n, counts, projections):
+def maximum_liklihood_cost(params, n, d, counts, projections):
     cost = 0 
     
-    T = create_t_matrix(n,params)
+    T = create_t_matrix(n, d, params)
     density_matrix = np.matmul(T.H, T)
     
     for i in range(len(projections)):
@@ -198,6 +197,9 @@ Parameters:
 n: int
     number of qubits in our system.
 
+d: int
+    number of dimensions for the quantum system
+
 counts: list (num)
     List of counts for the tomography (list in the same order as the corresponding projections)
 
@@ -206,17 +208,18 @@ projections: list (np.matrix)
 
 """
 
-def maximum_liklihood_estimation(n, counts, projections):
-    init_params = np.linspace(0.1, 1, 4 ** n)
+def maximum_liklihood_estimation(n, d,  counts, projections):
+    num_params = d ** n + (sum(range(d ** n))) * 2
+    init_params = np.linspace(0.1, 1, num_params)
     counts = counts/sum(counts)
     opt = {'disp':True,'maxiter':40000}
 
-    soln_h = minimize(maximum_liklihood_cost, init_params, args=(n,counts,projections), method = 'SLSQP', options=opt)
+    soln_h = minimize(maximum_liklihood_cost, init_params, args=(n, d, counts, projections), method = 'SLSQP', options=opt)
 
-    T = create_t_matrix(n,soln_h.x)
+    T = create_t_matrix(n,d,soln_h.x)
     density_matrix = 1/np.trace(np.matmul(T.H, T)) * np.matmul(T.H, T)
 
-    return np.reshape(density_matrix, (2**n, 2**n))
+    return np.reshape(density_matrix, (d**n, d**n))
 
 
 """
@@ -319,7 +322,18 @@ def import_xl(n, file):
     return projections, counts
 
 
+"""
+generate_basis_states(d)
 
+Generates the computational basis states for a given dimension, d.
+
+Parameters:
+----------------------
+
+d: int
+    number of dimensions of the quantum system.
+
+"""
 
 def generate_basis_states(d):
     basis_states = []
@@ -332,12 +346,11 @@ def generate_basis_states(d):
                 curr_state = np.append(curr_state, 1)
             else:
                 curr_state = np.append(curr_state, 0)
-                
-
         
         basis_states.append(np.asmatrix(curr_state))
         
     return basis_states
+
 
 """
 generate_gellman(d)
@@ -352,15 +365,12 @@ d: int
 
 """
 
-
-
 def generate_gellman(d):
     gm_matricies = []
     iden = np.identity(d)
 
     basis_states = generate_basis_states(d)
     gm_matricies.append(np.asmatrix(iden))
-
 
 
     for i in range(d):
@@ -372,7 +382,7 @@ def generate_gellman(d):
                 curr_x = np.outer(basis_states[i], basis_states[j]) + np.outer(basis_states[j], basis_states[i])
                 
                 # Generate the pauli Y matricies:
-                curr_y = 1j* np.outer(basis_states[i], basis_states[j]) - np.outer(basis_states[j], basis_states[i])
+                curr_y = -1j* np.outer(basis_states[i], basis_states[j]) - np.outer(basis_states[j], basis_states[i])
                 
                 gm_matricies.append(np.asmatrix(curr_x))
                 gm_matricies.append(np.asmatrix(curr_y))
@@ -381,12 +391,62 @@ def generate_gellman(d):
     
     for r in range(1,d):
         curr_z = np.asmatrix(np.zeros((d,d)))
-        for j in range(0, d-1):
+        for j in range(0, r):
             curr_z = curr_z + np.outer(basis_states[j], basis_states[j])
-            print(curr_z)
             
         curr_z = np.sqrt(2/(r*(r+1))) * (curr_z - r*np.outer(basis_states[r], basis_states[r]))
         gm_matricies.append(curr_z)
                 
     return gm_matricies
 
+
+"""
+gen_sp_matricies(n, curr_matricies, basis_matricies)
+
+Recursively produces len(curr_projs) ** 2 projections in string form. 
+
+Parameters:
+----------------------
+n: int
+    number of qudits in the system.
+
+curr_matricies: list (str)
+    the current list of matricies (first input will always be an empty list)
+
+basis_matricies: list (str)
+    the list of matricies from which you want to build the resulting list of projections (for example, the Pauli Matricies)
+
+"""
+
+def gen_sp_matricies(n, curr_matricies, basis_matricies):
+    
+    if n == 1:
+        return basis_matricies
+    
+    next_matricies = []
+    for i in curr_matricies:
+        for j in basis_matricies:
+            curr_matrix = np.kron(i,j)
+            next_matricies.append(curr_matrix)
+    n = n - 1
+    
+    if n == 1:
+        return next_matricies
+        
+    else:
+        return gen_sp_matricies(n, next_matricies, basis_matricies)
+            
+
+def gen_basis_states(d, n):
+    total_dim = d ** n
+    basis_states = []
+    curr = 0
+    for i in range(total_dim):
+        curr_state = np.zeros(total_dim)
+        for j in range(total_dim):
+            if j == curr:
+                curr_state[j] = 1
+        curr = curr + 1
+        basis_states.append(np.transpose(np.asmatrix(curr_state)))
+
+    return basis_states

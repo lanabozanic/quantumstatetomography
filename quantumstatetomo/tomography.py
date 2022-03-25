@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import qutip as qt
-from tomohelpers import *
-from rhoproperties import *
+from .tomohelpers import *
+from .rhoproperties import *
 
 
 """
@@ -13,8 +13,9 @@ a class defining the resulting density matrix of a tomography prodcedure, holdin
 """
 class Rho():
 
-    def __init__(self, n, rho):
+    def __init__(self, n, d, rho):
         self.dims = [n,n]
+        self.d = d
         self.n = n
         self.matrix = rho
         self.purity = purity(self.matrix)
@@ -22,6 +23,13 @@ class Rho():
             self.s_param = s_param(self.n, self.matrix)
         self.concurrence = concurrence(self.matrix)
         self.tangle = tangle(self.concurrence)
+        self.stokes = stokes_params(self.matrix, self.d, self.n)
+
+    def display_stokes(self):
+        gell_manns = generate_gellman(self.d)
+        sp_matricies = gen_sp_matricies(self.n, gell_manns, gell_manns)
+        for i in range(len(sp_matricies)):
+            print("Matrix:\n", sp_matricies[i], ". \nAssociated Stokes Parameter:", round(self.stokes[i], 3), "\n\n")
 
     
 """
@@ -38,9 +46,9 @@ class QubitTomo():
 
 
     """
-    polarization_tomography_MLE()
+    qbit_MLE()
 
-    Performs the Maximum Likelihood Technique Algorithm to reconstruct the state. Returns a Rho() object.
+    Performs the Maximum Likelihood Technique Algorithm to reconstruct the state of a qubit. Returns a Rho() object.
 
     Parameters:
     ----------------------
@@ -56,7 +64,7 @@ class QubitTomo():
         example.xlsx)
     """
 
-    def polarization_tomography_MLE(self, projections=[], counts=np.array([]), filename=None):
+    def qst_MLE(self, projections=[], counts=np.array([]), filename=None):
 
         if type(counts) != type(np.array([])):
             raise ValueError("Counts must be a numpy array")
@@ -67,8 +75,8 @@ class QubitTomo():
         else:
             projections = str_to_state(projections, self.n)
         
-        rho = maximum_liklihood_estimation(self.n, counts, projections)
-        return Rho(self.n, rho)
+        rho = maximum_liklihood_estimation(self.n, 2, counts, projections)
+        return Rho(self.n, 2, rho)
 
 
 
@@ -94,7 +102,7 @@ class QubitTomo():
 
 
     """
-    get_density_plot()
+    density_plot()
 
     Used to visualize any n qubit state on a histogram using QuTiP 
 
@@ -130,15 +138,32 @@ class QubitTomo():
 """
 class QuditTomo()
 
-object used to perform tomography on qubits.
+object used to perform tomography on qudits.
 
 """
 
 class QuditTomo():
 
 
-    def __init__(self, nqbits, dim):
-        self.n = nqdits
+    def __init__(self, n, dim):
+        self.n = n
         self.d = dim
+
+
+    def qst_MLE(self, projections=[], counts=np.array([])):
+        if len(projections) != len(counts):
+            raise ValueError("len(projections) mst be equal to len(counts):")
+
+        if type(counts) != type(np.array([])):
+            raise ValueError("Counts must be a numpy array")
+
+        rho = maximum_liklihood_estimation(self.n, self.d, counts, projections)
+        return Rho(self.n, self.d, rho)
+
+    def display_rho(self,rho):
+        return(qt.Qobj(rho))
+
+
+    
 
     
